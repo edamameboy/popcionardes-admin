@@ -6,9 +6,10 @@ interface ProductsTabProps {
   supabase: any;
   fetchAdminData: () => void;
   formatRupiah: (angka: number) => string;
+  showToast: (message: string, type: "success" | "error" | "warning") => void;
 }
 
-export default function ProductsTab({ products, supabase, fetchAdminData, formatRupiah }: ProductsTabProps) {
+export default function ProductsTab({ products, supabase, fetchAdminData, formatRupiah, showToast }: ProductsTabProps) {
   const [productMode, setProductMode] = useState("list");
   const [productViewMode, setProductViewMode] = useState("table"); // Default ke Table agar langsung lihat mode Excel
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
@@ -55,7 +56,7 @@ export default function ProductsTab({ products, supabase, fetchAdminData, format
     
     setEditedProducts(newEdits);
     setBulkAction(""); // Reset dropdown
-    alert(`Menerapkan perubahan ke ${selectedProducts.length} produk. Jangan lupa klik Simpan Semua!`);
+    showToast(`Menerapkan perubahan ke ${selectedProducts.length} produk. Jangan lupa klik Simpan Semua!`, "warning");
   };
 
   // 3. Fungsi Simpan Semua Perubahan ke Database
@@ -67,19 +68,23 @@ export default function ProductsTab({ products, supabase, fetchAdminData, format
         ...editedProducts[id]
       }));
 
-      // Eksekusi update massal menggunakan Promise.all
       await Promise.all(
-        updates.map(update => 
-          supabase.from("products").update(update).eq("id", update.id)
-        )
+        updates.map(update => supabase.from("products").update(update).eq("id", update.id))
       );
 
-      alert(`🎉 Boom! ${updates.length} produk berhasil di-update massal!`);
+      // Ganti alert menjadi showToast
+      showToast(`🎉 Boom! ${updates.length} produk berhasil di-update massal!`, "success");
+      
       setEditedProducts({});
       setSelectedProducts([]);
-      fetchAdminData();
+      
+      // Berikan jeda 300 milidetik agar Supabase selesai bernafas, baru tarik data terbaru
+      setTimeout(() => {
+        fetchAdminData();
+      }, 300);
+      
     } catch (error: any) {
-      alert(`Gagal menyimpan massal: ${error.message}`);
+      showToast(`❌ Gagal menyimpan massal: ${error.message}`, "error");
     } finally {
       setIsSubmittingProduct(false);
     }
@@ -118,7 +123,7 @@ export default function ProductsTab({ products, supabase, fetchAdminData, format
 
       setProductForm(initialProductForm); setUploadFile(null); setEditingProductId(null); setProductMode("list");
       fetchAdminData();
-    } catch (error: any) { alert(`Error: ${error.message}`); } finally { setIsSubmittingProduct(false); }
+    } catch (error: any) { showToast(`Error: ${error.message}`, "error"); } finally { setIsSubmittingProduct(false); }
   };
 
   const handleEditProduct = (prod: any) => {
@@ -182,9 +187,9 @@ export default function ProductsTab({ products, supabase, fetchAdminData, format
         if (formattedData.length === 0) throw new Error("Tidak ada data produk yang valid untuk diimpor.");
         const { error } = await supabase.from("products").insert(formattedData);
         if (error) throw error;
-        alert(`🎉 Sukses! ${formattedData.length} Produk Excel Berhasil Diimpor!`);
+        showToast(`🎉 Sukses! ${formattedData.length} Produk Excel Berhasil Diimpor!`, "success");
         fetchAdminData();
-      } catch (error: any) { alert(`Gagal Import: ${error.message}`); } finally {
+      } catch (error: any) { showToast(`Gagal Import: ${error.message}`, "error"); } finally {
         setIsImporting(false); if (fileInputRef.current) fileInputRef.current.value = "";
       }
     };

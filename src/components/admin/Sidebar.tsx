@@ -11,9 +11,11 @@ export default function Sidebar({ activeTab, setActiveTab, handleLogout }: Sideb
     { id: "overview", label: "Overview", icon: "🍱" },
     { id: "orders", label: "Orders", icon: "🛒" },
     { id: "products", label: "Products", icon: "📦" },
-    { id: "opname", label: "Stock Opname", icon: "📋" }, // <--- MENU BARU KITA
+    { id: "opname", label: "Stock Opname", icon: "📋" },
     { id: "customers", label: "Customers", icon: "👥" },
     { id: "analytics", label: "Analytics", icon: "📊" },
+    { id: "vouchers", label: "Promo & Vouchers", icon: "🎫" },
+    { id: "expenses", label: "Buku Kas", icon: "💸" },
   ];
 
   return (

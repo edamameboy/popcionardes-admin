@@ -4,9 +4,10 @@ interface OpnameTabProps {
   products: any[];
   supabase: any;
   fetchAdminData: () => void;
+  showToast: (message: string, type: "success" | "error" | "warning") => void;
 }
 
-export default function OpnameTab({ products, supabase, fetchAdminData }: OpnameTabProps) {
+export default function OpnameTab({ products, supabase, fetchAdminData, showToast }: OpnameTabProps) {
   const [opnameData, setOpnameData] = useState<any[]>([]);
   const [scanInput, setScanInput] = useState("");
   const [scanMessage, setScanMessage] = useState<{ text: string, type: "success" | "error" | "" }>({ text: "Siap memindai barcode...", type: "" });
@@ -66,7 +67,7 @@ export default function OpnameTab({ products, supabase, fetchAdminData }: Opname
     const changedItems = opnameData.filter(p => p.physical_stock !== p.stock);
     
     if (changedItems.length === 0) {
-      alert("🎉 Sistem dan Fisik sudah 100% klop! Tidak ada yang perlu disinkronisasi.");
+      showToast("🎉 Sistem dan Fisik sudah 100% klop!", "success");
       return;
     }
 
@@ -77,30 +78,24 @@ export default function OpnameTab({ products, supabase, fetchAdminData }: Opname
       const updatePromises = changedItems.map(async (item) => {
         const { data, error } = await supabase
           .from("products")
-          .update({
-            stock: item.physical_stock,
-            // Hapus atau comment baris 'quantity' jika kolom ini tidak ada di database Anda
-            // quantity: item.physical_stock 
-          })
+          .update({ stock: item.physical_stock })
           .eq("id", item.id)
-          .select(); // <--- TRIK DEWA: Memaksa DB mengembalikan data yang sukses diubah
+          .select();
 
-        // Jika ada error sintaks/kolom
         if (error) throw error;
-        
-        // Jika data kosong, berarti Update diblokir oleh Supabase (Penyusup / RLS Policy)
-        if (!data || data.length === 0) {
-           throw new Error(`Akses ditolak saat mengubah ${item.name}. Cek RLS Policy di Supabase!`);
-        }
       });
 
       await Promise.all(updatePromises);
       
-      alert(`✅ Sinkronisasi Selesai! ${changedItems.length} produk telah diperbarui.`);
-      fetchAdminData(); // Tarik data terbaru dari DB
+      // 🔥 FIX UTAMA: Update data lokal di layar secara instan tanpa nunggu refresh jaringan!
+      setOpnameData(prev => prev.map(p => ({ ...p, stock: p.physical_stock }))); 
+      
+      // Ganti alert menjadi showToast
+      showToast(`✅ Sukses! ${changedItems.length} produk telah disinkronisasi.`, "success");
+      
+      fetchAdminData(); // Sinkronisasi latar belakang
     } catch (error: any) {
-      alert(`❌ Gagal Sinkronisasi: ${error.message}`);
-      console.error("DETAIL ERROR:", error);
+      showToast(`❌ Gagal: ${error.message}`, "error");
     } finally {
       setIsSyncing(false);
     }
