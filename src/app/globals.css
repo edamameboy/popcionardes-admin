@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    /* Latar belakang krem/kuning muda agar warna-warni elemen lebih pop-out */
+    background-color: #fefce8;
+    color: #000000;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Kustomisasi warna saat teks diblok (highlight) */
+  ::selection {
+    background-color: #000000;
+    color: #ffffff;
+  }
+}
