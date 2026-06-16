@@ -10,6 +10,7 @@ import Topbar from "../components/admin/Topbar";
 import OverviewTab from "../components/admin/OverviewTab";
 import ProductsTab from "../components/admin/ProductsTab";
 import OrdersTab from "../components/admin/OrdersTab";
+import OpnameTab from "../components/admin/OpnameTab";
 
 const formatRupiah = (angka: number) => {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(angka);
@@ -88,6 +89,9 @@ export default function AdminDashboard() {
           )}
           {activeTab === "orders" && (
             <OrdersTab orders={orders} supabase={supabase} fetchAdminData={fetchAdminData} formatRupiah={formatRupiah} />
+          )}
+          {activeTab === "opname" && (
+            <OpnameTab products={products} supabase={supabase} fetchAdminData={fetchAdminData} />
           )}
         </main>
 

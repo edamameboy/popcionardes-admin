@@ -9,8 +9,9 @@ interface SidebarProps {
 export default function Sidebar({ activeTab, setActiveTab, handleLogout }: SidebarProps) {
   const menus = [
     { id: "overview", label: "Overview", icon: "🍱" },
-    { id: "products", label: "Products", icon: "📦" },
     { id: "orders", label: "Orders", icon: "🛒" },
+    { id: "products", label: "Products", icon: "📦" },
+    { id: "opname", label: "Stock Opname", icon: "📋" }, // <--- MENU BARU KITA
     { id: "customers", label: "Customers", icon: "👥" },
     { id: "analytics", label: "Analytics", icon: "📊" },
   ];
